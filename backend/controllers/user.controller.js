@@ -80,4 +80,12 @@ const getLoggedInUserDetails = asyncHandler(async (req, res) => {
     });
 });
 
-export { login, register, logout, getLoggedInUserDetails };
+const getAllUserData = asyncHandler(async (req, res) => {
+    const users = await User.find({});
+    if (!users) {
+        throw new CustomError(400, "No users found");
+    }
+    res.status(200).json(new CustomResponse(200, "all users", users));
+});
+
+export { login, register, logout, getLoggedInUserDetails, getAllUserData };

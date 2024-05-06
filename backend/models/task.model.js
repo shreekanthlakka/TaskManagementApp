@@ -35,8 +35,9 @@ const taskSchema = new mongoose.Schema(
         },
         assignedTo: [
             {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
+                _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                name: { type: String },
+                email: { type: String },
             },
         ],
     },

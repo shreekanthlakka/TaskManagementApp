@@ -20,17 +20,21 @@ const getAllTasksApi = async () => {
 
 const createNewTaskApi = async (newTask) => {
     try {
-        console.log("TASK FILE ===> ", newTask);
+        const fd = new FormData();
+        fd.append("title", newTask.title);
+        fd.append("description", newTask.description);
+        fd.append("priority", newTask.priority);
+        fd.append("duedate", newTask.duedate);
+        fd.append("taskfile", newTask.taskfile);
+        fd.append("assignedTo", JSON.stringify(newTask.assignedTo));
+
         const res = await fetch(`${URI}/tasks`, {
             method: "POST",
             credentials: "include",
-            headers: {
-                "Content-Type": "multipart/form-data",
-                // "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newTask),
+            body: fd,
         });
         const data = await res.json();
+        // console.log("data res ==> ", data);
         return data;
     } catch (error) {
         console.log("error in creating api", error);

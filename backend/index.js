@@ -3,9 +3,11 @@ dotenv.config();
 
 import { connectWithDB } from "./config/db.js";
 import { configCloudinary } from "./config/cloudinary.js";
+import { connectToRedis } from "./utils/connectRedis.js";
 
 connectWithDB();
 configCloudinary();
+connectToRedis();
 import app from "./app.js";
 
 app.listen(process.env.PORT, () =>

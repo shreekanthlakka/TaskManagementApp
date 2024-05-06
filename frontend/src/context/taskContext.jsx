@@ -3,15 +3,17 @@ import {
     createNewTaskApi,
     deleteTaskApi,
     getAllTasksApi,
+    getTaskApi,
     updateTaskApi,
 } from "../services/taskApiServices";
+import toast from "react-hot-toast";
 
 const taskContext = createContext();
 
 const initialState = {
     tasks: [],
     isLoading: false,
-    selectedTask: null,
+    selectedTask: {},
     errors: {},
 };
 
@@ -41,7 +43,7 @@ function taskReducer(state, action) {
                     ele._id === action.payload._id ? action.payload : ele
                 ),
             };
-        case "SELECT_TASK":
+        case "SET_TASK":
             return {
                 ...state,
                 isLoading: false,
@@ -64,13 +66,16 @@ function TaskContextProvider({ children }) {
             const res = await createNewTaskApi(newObj);
             if (res.success) {
                 dispatch({ type: "NEW_TASK", payload: res.data });
+                toast.success(res.success);
             }
             if (!res.success) {
+                toast.error("failed to create/add task");
                 throw {
                     status: res.status,
                     message: res.message,
                 };
             }
+            return res;
         } catch (error) {
             dispatch({ type: "ERROR", payload: error });
         }
@@ -104,6 +109,7 @@ function TaskContextProvider({ children }) {
                 };
             } else {
                 dispatch({ type: "DELETE_TASK", payload: res.data._id });
+                toast.success("task deleated sucessfully");
             }
         } catch (error) {
             dispatch({ type: "ERROR", payload: error });
@@ -126,6 +132,23 @@ function TaskContextProvider({ children }) {
         }
     };
 
+    const getATask = async (id) => {
+        try {
+            const res = await getTaskApi(id);
+            if (res.success) {
+                dispatch({ type: "SET_TASK", payload: res.data });
+            }
+            if (!res.success) {
+                throw {
+                    status: res.status,
+                    message: res.message,
+                };
+            }
+        } catch (error) {
+            dispatch({ type: "ERROR", payload: error });
+        }
+    };
+
     const value = {
         tasks,
         isLoading,
@@ -135,6 +158,7 @@ function TaskContextProvider({ children }) {
         getAllTasks,
         deleteATask,
         updatedTask,
+        getATask,
     };
     return (
         <taskContext.Provider value={value}>{children}</taskContext.Provider>

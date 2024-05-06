@@ -1,13 +1,14 @@
 import express from "express";
 import { body, checkSchema } from "express-validator";
 import {
+    getAllUserData,
     getLoggedInUserDetails,
     login,
     logout,
     register,
 } from "../controllers/user.controller.js";
 import { userValidationSchema } from "../validators/userValidationSchema.js";
-import { isLoggedIn } from "../middlewares/isLoggedIn.js";
+import { customRole, isLoggedIn } from "../middlewares/isLoggedIn.js";
 
 const router = express.Router();
 
@@ -27,5 +28,8 @@ router
 
 router.route("/logout").post(isLoggedIn, logout);
 router.route("/loggedInuser").get(isLoggedIn, getLoggedInUserDetails);
+router
+    .route("/allUsers")
+    .get(isLoggedIn, customRole(["user", "admin"]), getAllUserData);
 
 export default router;

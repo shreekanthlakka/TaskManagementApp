@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { isEmail, isMobilePhone } from "validator";
-import { registerApi } from "../services/userApiServices";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { useTask } from "../context/taskContext";
+import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { useUser } from "../context/userContext";
+import { getAllUsersData } from "../services/userApiServices";
 
 const Form = styled.form`
     display: flex;
@@ -41,6 +41,7 @@ const initialState = {
     // status: "",
     duedate: "",
     taskfile: "",
+    assignedTo: [],
 };
 
 function Register() {
@@ -48,7 +49,8 @@ function Register() {
     const [clientErrors, setClientErrors] = useState({});
     const errors = {};
     const navigate = useNavigate();
-    const { createNewTasks } = useTask();
+    const { createNewTasks, isLoading } = useTask();
+    const [users, setUsers] = useState([]);
 
     const runValidations = () => {
         if (formData.title.trim().length === 0) {
@@ -73,18 +75,49 @@ function Register() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        console.log(formData);
+        console.log("====>", formData);
         runValidations();
         if (Object.keys(errors).length === 0) {
             //api call
-
             const res = await createNewTasks(formData);
-            console.log("response from server ", res);
+            if (res.success) {
+                navigate("/account/tasks");
+            }
             setClientErrors({});
         } else {
             setClientErrors(errors);
         }
     }
+
+    function handleMultiChange(selectedOptions) {
+        const assignedUsers = users
+            .filter((user) =>
+                selectedOptions.map((opt) => opt.value).includes(user._id)
+            )
+            .map((user) => ({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+            }));
+        setFormData({
+            ...formData,
+            assignedTo: assignedUsers,
+        });
+    }
+
+    useEffect(() => {
+        (async () => {
+            const res = await getAllUsersData();
+            if (res.success) {
+                setUsers(res.data);
+            }
+        })();
+    }, []);
+
+    const options = users.map((user) => ({
+        value: user._id,
+        label: user.name,
+    }));
 
     return (
         <Form onSubmit={handleSubmit}>
@@ -127,6 +160,12 @@ function Register() {
                 }
             />
             {clientErrors.taskfile && <p>{clientErrors.taskfile}</p>}
+            <Select
+                options={options}
+                isMulti
+                placeholder="assign tast to "
+                onChange={handleMultiChange}
+            />
             <div>
                 <label>Select Priority</label>
                 <input
@@ -173,7 +212,9 @@ function Register() {
                 <label htmlFor="low">Low</label>
                 {clientErrors.priority && <p>{clientErrors.priority}</p>}
             </div>
-            <button type="submit">Add Task</button>
+            <button type="submit" disabled={isLoading}>
+                Add Task
+            </button>
         </Form>
     );
 }

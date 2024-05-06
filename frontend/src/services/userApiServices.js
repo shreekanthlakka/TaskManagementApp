@@ -76,6 +76,31 @@ const getCurrentLoggedInUser = async () => {
     }
 };
 
+const getAllUsersData = async () => {
+    try {
+        const res = await fetch(`${URI}/users/allUsers`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Content-type": "application/json",
+            },
+        });
+        if (!res.ok) {
+            throw new Error("Server response not ok");
+        }
+        const data = await res.json();
+        return data;
+    } catch (error) {
+        console.log("error in server  response : ", error);
+    }
+};
+
 // registerApi("five", "five@gmail.com", "password", "9000012345", "user");
 
-export { loginApi, registerApi, logoutApi, getCurrentLoggedInUser };
+export {
+    loginApi,
+    registerApi,
+    logoutApi,
+    getCurrentLoggedInUser,
+    getAllUsersData,
+};

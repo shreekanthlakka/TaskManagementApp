@@ -65,7 +65,9 @@ app.post("/api/v1/testFile", async (req, res) => {
 
 import userRoutes from "./routes/user.routes.js";
 import taskRoutes from "./routes/task.routes.js";
+import commentRoutes from "./routes/comment.routes.js";
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/comments", commentRoutes);
 
 export default app;

@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { CustomError } from "../utils/customError.js";
 import { CustomResponse } from "../utils/customResponse.js";
 import { v2 as cloudinary } from "cloudinary";
+import { client } from "../utils/connectRedis.js";
 
 const getAllTasks = asyncHandler(async (req, res) => {
     const tasks = await Task.find();
@@ -20,34 +21,37 @@ const createTask = asyncHandler(async (req, res) => {
             .status(400)
             .json(new CustomError(400, "Invalid data entered", errors.array()));
     }
-    // let file;
-    // let responce;
-    // if (req.files) {
-    //     file = req.files.taskfile.tempFilePath;
-    //     responce = await cloudinary.uploader.upload(file, {
-    //         folder: "taskfiles",
-    //         width: 150,
-    //         crop: "scale",
-    //     });
-    // }
+    let file;
+    let result;
+    if (req.files) {
+        file = req.files.taskfile.tempFilePath;
+        console.log("files ====> ", file);
+        result = await cloudinary.uploader.upload(file, {
+            folder: "taskfiles",
+            width: 150,
+            crop: "scale",
+        });
+    }
 
-    console.log("files ====> ", req.file);
     // console.log("res from  clodinary ", responce);
 
-    const { title, description, priority, duedate } = req.body;
+    const { title, description, priority, duedate, assignedTo } = req.body;
     const task = await Task.create({
         userId: req.user._id,
         title,
         description,
         priority,
         duedate,
-        // taskfile: {
-        //     url: responce.secure_url,
-        // },
+        assignedTo: JSON.parse(assignedTo),
+        taskfile: {
+            url: result?.secure_url,
+            id: result?.public_id,
+        },
     });
     if (!task) {
         throw new CustomError(400, "failed creating task");
     }
+    await client.lPush("emailQueue", JSON.stringify(task));
     res.status(201).json(new CustomResponse(200, "created sucessfully", task));
 });
 
@@ -58,7 +62,11 @@ const getTask = asyncHandler(async (req, res) => {
             .status(400)
             .json(new CustomError(400, "bad request", errors.array()));
     }
-    const task = await Task.findById(req.params.taskId);
+    const task = await Task.findById(req.params.taskId).populate({
+        path: "userId",
+        model: "User",
+        select: ["name", "email"],
+    });
     if (!task) {
         throw new CustomError(404, "No task found by this id");
     }
@@ -101,6 +109,7 @@ const deleteTask = asyncHandler(async (req, res) => {
     if (!task) {
         throw new CustomError(404, "no task with this id found!");
     }
+    await cloudinary.uploader.destroy(task.taskfile.id);
     res.status(200).json(new CustomResponse(200, "deleated sucessfully", task));
 });
 
