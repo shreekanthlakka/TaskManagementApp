@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DashBoard from "./components/DashBoard";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -8,22 +8,41 @@ import Tasks from "./components/Tasks";
 import Task from "./components/Task";
 import AccountDetails from "./components/AccountDetails";
 import AddTask from "./components/AddTask";
+import UpdateTask from "./components/UpdateTask";
+import PrivateRoute from "./components/PrivateRoute";
+import Unauthorized from "./components/Unauthorized";
 
 function App() {
     return (
         <div>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<DashBoard />}>
+                    <Route element={<DashBoard />}>
+                        <Route
+                            index
+                            element={<Navigate replace to="/login" />}
+                        />
                         <Route path="/login" index element={<Login />} />
                         <Route path="/register" element={<Register />} />
                     </Route>
-                    <Route path="/account" element={<AccountDashboard />}>
+                    <Route
+                        element={
+                            <PrivateRoute permittedRoles={["admin", "user"]}>
+                                <AccountDashboard />
+                            </PrivateRoute>
+                        }
+                    >
+                        <Route element={<Navigate to="/tasks" />} />
                         <Route path="tasks" index element={<Tasks />} />
                         <Route path="tasks/:id" element={<Task />} />
                         <Route path="addTask" element={<AddTask />} />
+                        <Route
+                            path="updateTask/:taskId"
+                            element={<UpdateTask />}
+                        />
                     </Route>
                     <Route path="/profile" element={<AccountDetails />} />
+                    <Route path="/unauthorized" element={<Unauthorized />} />
                 </Routes>
             </BrowserRouter>
             <Toaster

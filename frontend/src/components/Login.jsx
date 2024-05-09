@@ -69,7 +69,7 @@ function Login() {
             const res = await loginUser(formData);
             if (res.success) {
                 toast.success(res.message);
-                navigate("/account/tasks");
+                navigate("/tasks");
             }
             setClientErrors({});
             setFormData(initialState);

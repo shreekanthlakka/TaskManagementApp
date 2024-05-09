@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTask } from "../context/taskContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { getAllUsersData } from "../services/userApiServices";
 
@@ -43,12 +43,14 @@ const initialState = {
     assignedTo: [],
 };
 
-function AddTask() {
+function UpdateTask() {
+    const { taskId } = useParams();
+    const { isLoading, updatedTask, getATask } = useTask();
+    // const [selectedTask, setSelectedTask] = useState({});
     const [formData, setFormData] = useState(initialState);
     const [clientErrors, setClientErrors] = useState({});
     const errors = {};
     const navigate = useNavigate();
-    const { createNewTasks, isLoading } = useTask();
     const [users, setUsers] = useState([]);
 
     const runValidations = () => {
@@ -74,13 +76,13 @@ function AddTask() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        // console.log("====>", formData);
+        console.log("====>", formData);
         runValidations();
         if (Object.keys(errors).length === 0) {
             //api call
-            const res = await createNewTasks(formData);
+            const res = await updatedTask(taskId, formData);
             if (res?.success) {
-                navigate("/tasks");
+                navigate("/account/tasks");
             }
             setClientErrors({});
         } else {
@@ -105,12 +107,13 @@ function AddTask() {
     }
 
     useEffect(() => {
-        (async () => {
-            const res = await getAllUsersData();
-            if (res.success) {
-                setUsers(res.data);
+        async function fetchData() {
+            const [resUser] = await Promise.all([getAllUsersData()]);
+            if (resUser.success) {
+                setUsers(resUser.data);
             }
-        })();
+        }
+        fetchData();
     }, []);
 
     const options = users.map((user) => ({
@@ -120,10 +123,11 @@ function AddTask() {
 
     return (
         <Form onSubmit={handleSubmit}>
-            <h1>Add Task</h1>
+            <h1>Update Task</h1>
             <input
                 type="text"
                 placeholder="title"
+                name="title"
                 value={formData.title}
                 onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
@@ -133,6 +137,7 @@ function AddTask() {
             <input
                 type="text"
                 placeholder="description"
+                name="description"
                 value={formData.description}
                 onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
@@ -142,6 +147,7 @@ function AddTask() {
             <input
                 type="date"
                 placeholder="duedate"
+                name="duedate"
                 value={formData.duedate}
                 onChange={(e) =>
                     setFormData({ ...formData, duedate: e.target.value })
@@ -211,42 +217,16 @@ function AddTask() {
                 <label htmlFor="low">Low</label>
                 {clientErrors.priority && <p>{clientErrors.priority}</p>}
             </div>
-            <button type="submit" disabled={isLoading}>
-                {isLoading ? "Adding ... " : "Add Task"}
-            </button>
+            <div>
+                <button onClick={() => navigate("/account/tasks")}>
+                    Cancel
+                </button>
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? "updating ... " : "UpdateTask"}
+                </button>
+            </div>
         </Form>
     );
 }
 
-export default AddTask;
-
-/**
- * 
- *  title: {
-            type: String,
-        },
-        description: {
-            type: String,
-        },
-        priority: {
-            type: String,
-        },
-        status: {
-            type: String,
-        },
-        duedate: {
-            type: Date,
-            default: new Date(Date.now() + 24 * 60 * 60 * 1000), // one
-        },
-        taskfile: {
-            id: {
-                type: String,
-                default: "id",
-            },
-            url: {
-                type: String,
-                default: "url",
-            },
-        },
- * 
- */
+export default UpdateTask;

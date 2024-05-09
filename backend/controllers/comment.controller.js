@@ -74,10 +74,21 @@ const deleteCommentById = asyncHandler(async (req, res) => {
     );
 });
 
+const deleteAllCommentByTaskId = asyncHandler(async (req, res) => {
+    const comments = await Comment.deleteMany({ taskId: req.params.id });
+    if (!comments) {
+        throw new CustomError(400, "failed to delete commnets");
+    }
+    res.status(200).json(
+        new CustomResponse(200, "comments deleated sucessfully")
+    );
+});
+
 export {
     createComment,
     getAllComments,
     getCommentById,
     updateCommentById,
     deleteCommentById,
+    deleteAllCommentByTaskId,
 };

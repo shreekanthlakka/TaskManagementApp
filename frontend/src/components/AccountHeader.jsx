@@ -43,7 +43,7 @@ function AccountHeader() {
                         <h3>Hi , {user?.name}</h3>
                     </Link>
                     <div>
-                        <Link to="/account/tasks">DashBoard</Link>
+                        <Link to="/tasks">DashBoard</Link>
                         <Link to="/profile">Profile</Link>
                         <button onClick={handleLogout}>Logout</button>
                     </div>

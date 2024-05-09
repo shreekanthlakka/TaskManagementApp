@@ -6,8 +6,9 @@ import { mailSender } from "./mailSender.js";
 const redisClient = createClient();
 
 async function sendMailFun(message) {
-    console.log("message", message);
+    // console.log("message", message);
     const task = JSON.parse(message.element);
+    console.log("task details ===> ", task);
     const mailList = [...task.assignedTo];
     for (let i = 0; i < mailList.length; i++) {
         const message = {
@@ -18,6 +19,7 @@ async function sendMailFun(message) {
             <p>Description : ${task.description}</p>
             <p>priority : ${task.priority}</p>
             <p>DueDate : ${task.duedate}</p>
+            <a href=${task.taskfile?.url}>Click to see task file</a>
             </div>`,
         };
         await mailSender(message);

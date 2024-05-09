@@ -45,29 +45,33 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post("/api/v1/testFile", async (req, res) => {
-    console.log("req.body :>> ", req.body);
+// app.post("/api/v1/testFile", async (req, res) => {
+//     console.log("req.body :>> ", req.body);
 
-    let file;
-    let responce;
-    if (req.files) {
-        console.log("file upload ", req.files);
-        file = req.files.taskfile.tempFilePath;
-        console.log("FILE +++> ", file);
-        responce = await cloudinary.uploader.upload(file, {
-            folder: "taskfiles",
-            width: 150,
-            crop: "scale",
-        });
-        res.status(200).json(responce);
-    }
-});
+//     let file;
+//     let responce;
+//     if (req.files) {
+//         console.log("file upload ", req.files);
+//         file = req.files.taskfile.tempFilePath;
+//         console.log("FILE +++> ", file);
+//         responce = await cloudinary.uploader.upload(file, {
+//             folder: "taskfiles",
+//             width: 150,
+//             crop: "scale",
+//         });
+//         res.status(200).json(responce);
+//     }
+// });
 
 import userRoutes from "./routes/user.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
+import timeTracker from "./routes/timeTracker.routes.js";
+import files from "./routes/files.routes.js";
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/comments", commentRoutes);
+app.use("/api/v1/timetracker", timeTracker);
+app.use("/api/v1/files", files);
 
 export default app;

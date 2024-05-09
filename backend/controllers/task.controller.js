@@ -5,8 +5,22 @@ import { CustomError } from "../utils/customError.js";
 import { CustomResponse } from "../utils/customResponse.js";
 import { v2 as cloudinary } from "cloudinary";
 import { client } from "../utils/connectRedis.js";
+import ApiFutures from "../utils/ApiFutures.js";
+import { uploadToCloudinary } from "../utils/cloudinaryUpload.js";
 
 const getAllTasks = asyncHandler(async (req, res) => {
+    // const features = new ApiFutures(Task.find(), req.query)
+    //     .filter()
+    //     .sort()
+    //     .fields()
+    //     .paginate();
+
+    // const tasks = await features.query.populate({
+    //     path: "userId",
+    //     model: "User",
+    //     select: ["name", "email", "phonenumber", "role"],
+    // });
+
     const tasks = await Task.find();
     if (!tasks) {
         throw new CustomError(400, "No tasks found");
@@ -21,19 +35,14 @@ const createTask = asyncHandler(async (req, res) => {
             .status(400)
             .json(new CustomError(400, "Invalid data entered", errors.array()));
     }
-    let file;
     let result;
-    if (req.files) {
-        file = req.files.taskfile.tempFilePath;
-        console.log("files ====> ", file);
-        result = await cloudinary.uploader.upload(file, {
-            folder: "taskfiles",
-            width: 150,
-            crop: "scale",
-        });
+    if (!req.files) {
+        throw new CustomError(400, "no files");
     }
-
-    // console.log("res from  clodinary ", responce);
+    result = await uploadToCloudinary(req.files.taskfile?.tempFilePath);
+    if (!result) {
+        throw new CustomError(400, "failed to upload file to cloudinary");
+    }
 
     const { title, description, priority, duedate, assignedTo } = req.body;
     const task = await Task.create({
@@ -82,6 +91,8 @@ const updateTask = asyncHandler(async (req, res) => {
             .status(400)
             .json(new CustomError(400, "bad request", errors.array()));
     }
+    const { title, description, priority, duedate, assignedTo } = req.body;
+    console.log(".....===> req body", req.body);
     const task = await Task.findByIdAndUpdate(
         req.params.taskId,
         {
@@ -89,6 +100,7 @@ const updateTask = asyncHandler(async (req, res) => {
             description,
             priority,
             duedate,
+            assignedTo,
         },
         { new: true }
     );

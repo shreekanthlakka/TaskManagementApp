@@ -7,6 +7,7 @@ import {
     getCommentById,
     updateCommentById,
     deleteCommentById,
+    deleteAllCommentByTaskId,
 } from "../controllers/comment.controller.js";
 
 router
@@ -19,5 +20,8 @@ router
     .get(isLoggedIn, customRole(["admin", "user"]), getCommentById)
     .put(isLoggedIn, customRole(["admin", "user"]), updateCommentById)
     .delete(isLoggedIn, customRole(["admin", "user"]), deleteCommentById);
+router
+    .route("/deleteAllComments/:taskId")
+    .post(isLoggedIn, customRole(["admin", "user"]), deleteAllCommentByTaskId);
 
 export default router;

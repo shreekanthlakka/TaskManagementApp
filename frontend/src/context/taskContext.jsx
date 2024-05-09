@@ -38,7 +38,7 @@ function taskReducer(state, action) {
         case "UPDATE_TASK":
             return {
                 ...state,
-                isLoading: true,
+                isLoading: false,
                 tasks: state.tasks.map((ele) =>
                     ele._id === action.payload._id ? action.payload : ele
                 ),
@@ -66,7 +66,7 @@ function TaskContextProvider({ children }) {
             const res = await createNewTaskApi(newObj);
             if (res.success) {
                 dispatch({ type: "NEW_TASK", payload: res.data });
-                toast.success(res.success);
+                toast.success("Task added sucessfully");
             }
             if (!res.success) {
                 toast.error("failed to create/add task");
@@ -101,6 +101,7 @@ function TaskContextProvider({ children }) {
 
     const deleteATask = async (id) => {
         try {
+            dispatch({ type: "START" });
             const res = await deleteTaskApi(id);
             if (!res.success) {
                 throw {
@@ -118,6 +119,7 @@ function TaskContextProvider({ children }) {
 
     const updatedTask = async (id, updateObj) => {
         try {
+            dispatch({ type: "START" });
             const res = await updateTaskApi(id, updateObj);
             if (!res.success) {
                 throw {
@@ -127,6 +129,7 @@ function TaskContextProvider({ children }) {
             } else {
                 dispatch({ type: "UPDATE_TASK", payload: res.data });
             }
+            return res;
         } catch (error) {
             dispatch({ type: "ERROR", payload: error });
         }
@@ -134,6 +137,7 @@ function TaskContextProvider({ children }) {
 
     const getATask = async (id) => {
         try {
+            dispatch({ type: "START" });
             const res = await getTaskApi(id);
             if (res.success) {
                 dispatch({ type: "SET_TASK", payload: res.data });
@@ -144,6 +148,7 @@ function TaskContextProvider({ children }) {
                     message: res.message,
                 };
             }
+            return res;
         } catch (error) {
             dispatch({ type: "ERROR", payload: error });
         }

@@ -27,6 +27,9 @@ const createNewTaskApi = async (newTask) => {
         fd.append("duedate", newTask.duedate);
         fd.append("taskfile", newTask.taskfile);
         fd.append("assignedTo", JSON.stringify(newTask.assignedTo));
+        // Array.from(newTask.files).forEach((file) => {
+        //     fd.append("taskfiles", file);
+        // });
 
         const res = await fetch(`${URI}/tasks`, {
             method: "POST",
@@ -59,11 +62,13 @@ const getTaskApi = async (id) => {
 
 const updateTaskApi = async (id, updatedTask) => {
     try {
+        console.log("task in Apiservice=====> ", updatedTask);
         const res = await fetch(`${URI}/tasks/${id}`, {
             method: "PUT",
             credentials: "include",
             headers: {
-                "Content-Type": "multipart/form-data",
+                // "Content-Type": "multipart/form-data",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(updatedTask),
         });

@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import { useEffect, useState } from "react";
+import { useUser } from "../context/userContext";
 
 const Container = styled.div`
     display: flex;
@@ -25,15 +27,20 @@ const Container = styled.div`
     }
 `;
 
-const Div = styled.div``;
+const Div = styled.div`
+    z-index: 1;
+`;
 
 function Tasks() {
     const navigate = useNavigate();
-    const { tasks, deleteATask } = useTask();
+    const { setLoggedInUser, isLoggedIn } = useUser();
+    const { tasks } = useTask();
+    const { deleteATask, isLoading } = useTask();
+    const [selectedId, setSelectedId] = useState("");
+
     const events = tasks.map((task) => ({
         title: task.title,
         start: task.createdAt,
-        name: task.userId.name,
     }));
 
     function eventContent(eventInfo) {
@@ -45,12 +52,18 @@ function Tasks() {
         );
     }
 
+    // useEffect(() => {
+    //     (async () => {
+    //         await setLoggedInUser();
+    //     })();
+    // }, [isLoggedIn]);
+
     return (
         <>
             <Container>
                 <div>
                     <h2> Tasks - {tasks?.length}</h2>
-                    <button onClick={() => navigate("/account/addTask")}>
+                    <button onClick={() => navigate("/addTask")}>
                         Add Task
                     </button>
                 </div>
@@ -71,22 +84,35 @@ function Tasks() {
                                 <td>{ele.description}</td>
                                 <td>{ele.priority}</td>
                                 <td>
-                                    {ele.duedate
+                                    {`${ele.duedate}`
                                         .split("T")[0]
                                         .split("-")
                                         .reverse()
                                         .join("/")}
                                 </td>
                                 <td>
-                                    <button>update</button>
                                     <button
-                                        onClick={() => deleteATask(ele._id)}
+                                        onClick={() => {
+                                            setSelectedId(ele._id);
+                                            navigate(`/updateTask/${ele._id}`);
+                                        }}
                                     >
-                                        delete
+                                        update
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            deleteATask(ele._id);
+                                            setSelectedId(ele._id);
+                                        }}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading && ele._id === selectedId
+                                            ? "deleating..."
+                                            : "delete"}
                                     </button>
                                 </td>
                                 <td>
-                                    <Link to={`/account/tasks/${ele._id}`}>
+                                    <Link to={`/tasks/${ele._id}`}>
                                         <button>View Details</button>
                                     </Link>
                                 </td>
@@ -110,15 +136,65 @@ function Tasks() {
 export default Tasks;
 
 /**
- *   <div>
-      <h1>Demo App</h1>
-      <FullCalendar
-        plugins={[dayGridPlugin]}
-        initialView='dayGridMonth'
-        weekends={false}
-        events={events}
-        eventContent={renderEventContent}
-      />
-    </div>
+ *  
+ * 
+ * 
+ * <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Priority</th>
+                    <th>DueDate</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {tasks.map((ele) => (
+                    <tr key={ele._id}>
+                        <td>{ele.title}</td>
+                        <td>{ele.description}</td>
+                        <td>{ele.priority}</td>
+                        <td>
+                            {ele.duedate
+                                ?.split("T")[0]
+                                .split("-")
+                                .reverse()
+                                .join("/")}
+                        </td>
+                        <td>
+                            <button
+                                onClick={() => {
+                                    setSelectedId(ele._id);
+                                    navigate(`/updateTask/${ele._id}`);
+                                }}
+                            >
+                                update
+                            </button>
+                            <button
+                                onClick={() => {
+                                    deleteATask(ele._id);
+                                    setSelectedId(ele._id);
+                                }}
+                                disabled={isLoading}
+                            >
+                                {isLoading && ele._id === selectedId
+                                    ? "deleating..."
+                                    : "delete"}
+                            </button>
+                        </td>
+                        <td>
+                            <Link to={`/tasks/${ele._id}`}>
+                                <button>View Details</button>
+                            </Link>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
+ * 
  * 
  */
